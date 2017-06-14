@@ -1,0 +1,77 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+services:
+  ccenv:
+    image: hyperledger/fabric-ccenv
+    container_name: ccenv
+
+  ca0:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org1
+    ports:
+      - "7054:7054"
+    command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.mojix.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/e0f2baa2d5349cb02b168870218601e4e9d527207c0e57550035ad261939c635_sk -b admin:adminpw -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.mojix.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    container_name: ca_peerOrg1
+
+  ca1:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca-org2
+    ports:
+      - "8054:7054"
+    command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.mojix.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/99988e5bc2be787e1d703c0d6c3869c3f108ca942b5e50292f480a98975f1f60_sk -b admin:adminpw -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/org2.mojix.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    container_name: ca_peerOrg2
+
+  zookeeper:
+    image: hyperledger/fabric-zookeeper
+
+  kafka:
+    image: hyperledger/fabric-kafka
+    environment:
+      KAFKA_BROKER_ID: 0
+      KAFKA_MESSAGE_MAX_BYTES: 103809024
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 103809024
+      KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE: "false"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+  orderer.mojix.com:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.mojix.com
+    container_name: orderer.mojix.com
+
+  peer0.org1.mojix.com:
+    container_name: peer0.org1.mojix.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.org1.mojix.com
+
+  peer1.org1.moxji.com:
+    container_name: peer1.org1.mojix.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.org1.mojix.com
+
+  peer0.org2.mojix.com:
+    container_name: peer0.org2.mojix.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.org2.mojix.com
+
+  peer1.org2.mojix.com:
+    container_name: peer1.org2.mojix.com
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer1.org2.mojix.com
